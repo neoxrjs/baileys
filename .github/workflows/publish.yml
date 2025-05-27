@@ -1,0 +1,36 @@
+name: Publish Package
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: 'https://registry.npmjs.org'
+          scope: '@neoxr'
+
+      - name: Enable Yarn
+        run: corepack enable
+
+      - name: Install dependencies with Yarn
+        run: yarn install --frozen-lockfile
+
+      - name: Publish package to npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          echo "Publishing with provenance (CI environment)"
+          npm publish --access public --provenance
